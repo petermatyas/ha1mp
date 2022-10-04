@@ -10,7 +10,7 @@ let hamRepeaters = [
 
 
 var map = L.map('map').setView([51.505, -0.09], 13);
-console.log('---------------')
+
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -40,7 +40,9 @@ function showPosition(position) {
     console.log('locator', locator)
     document.getElementById("mylocator").innerHTML = locator;
 
-
+    var latLon = L.latLng(myPosLat, myPosLon);
+    map.setView(latLon, 11, { animation: true });    
+    var marker = L.marker([myPosLat, myPosLon]).addTo(map);
 
   }
 
@@ -128,6 +130,16 @@ function selectGateway(location) {
 }
   
 
-function changeTarget(data) {
-  console.log('data', data)  
-}
+
+
+var input = document.getElementById("target");
+input.addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    console.log(input.value)
+    fetch('https://nominatim.openstreetmap.org/search/'+input.value+'?format=json&limit=1')
+      .then((response) => response.json())
+      .then((data) => console.log(data));
+
+  }
+}); 
+
