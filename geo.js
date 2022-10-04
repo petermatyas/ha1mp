@@ -136,9 +136,14 @@ var input = document.getElementById("target");
 input.addEventListener("keypress", function(event) {
   if (event.key === "Enter") {
     console.log(input.value)
-    fetch('https://nominatim.openstreetmap.org/search/'+input.value+'?format=json&limit=1')
+    fetch(`https://nominatim.openstreetmap.org/search/`+input.value+`?format=json&limit=1`)
       .then((response) => response.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+        var targetLat = data[0].lat;
+        var targatLon = data[0].lon;
+        console.log('-->', targetLat, targatLon)
+        //var marker = L.marker([targetLat, targetLon]).addTo(map);
+      });
 
   }
 }); 
