@@ -140,9 +140,9 @@ input.addEventListener("keypress", function(event) {
       .then((response) => response.json())
       .then((data) => {
         var targetLat = data[0].lat;
-        var targatLon = data[0].lon;
-        console.log('-->', targetLat, targatLon)
-        //var marker = L.marker([targetLat, targetLon]).addTo(map);
+        var targetLon = data[0].lon;
+        console.log('-->', targetLat, targetLon)
+        var marker2 = L.marker([targetLat, targetLon]).addTo(map);
       });
 
   }
