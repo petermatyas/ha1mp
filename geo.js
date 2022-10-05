@@ -1,8 +1,15 @@
-var myPosLat = 0
-var myPosLon = 0
-var myPosAcc = 0
+//var myPosLat = 0
+//var myPosLon = 0
+//var myPosAcc = 0
+
+var myPos = {'coord':[]};
+var repeaterPos = {};
+var targetPos = {};
+//var repeaterLat = 0
+//var repeaterLon = 0
 
 let hamRepeaters = [
+  {'name':'none'},
   {'name':'Szombathely', 'lat':47.2376, 'lon':16.5857},
   {'name':'Győr (Nyúl-hegy)', 'lat':47.58179, 'lon':17.6586},
   {'name':'Zalaegerszeg ', 'lat':46.81357, 'lon':16.81226}
@@ -29,24 +36,27 @@ function getLocation() {
 
 function showPosition(position) {
     console.log(position)
-    myPosLat = position.coords.latitude;
-    myPosLon = position.coords.longitude;
-    myPosAcc = position.coords.accuracy;
+    myPos.coord[0] = position.coords.latitude;
+    myPos.coord[1] = position.coords.longitude;
+    myPos.acc = position.coords.accuracy;
+
 
     let x = document.getElementById("mypos");
-    x.innerHTML = "Latitude: " + myPosLat +"<br>Longitude: " + myPosLon + "<br>Pontosság: " + myPosAcc;
+    x.innerHTML = "coord: " + myPos.coord + "<br>accuracy" + myPosAcc;
 
-    var locator = LatLng2Loc(myPosLat, myPosLon, 6)
+    var locator = LatLng2Loc(myPos.coord, 6)
     console.log('locator', locator)
     document.getElementById("mylocator").innerHTML = locator;
 
-    var latLon = L.latLng(myPosLat, myPosLon);
+    var latLon = L.latLng(myPos.coord[0], myPos.coord[1]);
     map.setView(latLon, 11, { animation: true });    
-    var marker = L.marker([myPosLat, myPosLon]).addTo(map);
+    var marker = L.marker(myPos.coord, {draggable:true}).addTo(map);
 
   }
 
-function LatLng2Loc(y, x, num) {
+function LatLng2Loc(coord, num) {
+  x = coord[1]
+  y = coord[0]
   if (x<-180) {x=x+360;}
   if (x>180) {x=x-360;}
   var yqth, yi, yk, ydiv, yres, ylp, y;
@@ -85,14 +95,12 @@ window.onload = function() {
     getLocation()
 
     for (var i=0; i<hamRepeaters.length; i++) {
-      var repeater = document.getElementById("repeaters");
-      var option = document.createElement("option");
-      option.value = hamRepeaters[i].lat + ',' + hamRepeaters[i].lon
-      option.text = hamRepeaters[i].name;
-      repeater.add(option); 
+        var repeater = document.getElementById("repeaters");
+        var option = document.createElement("option");
+        option.value = hamRepeaters[i].lat + ',' + hamRepeaters[i].lon
+        option.text = hamRepeaters[i].name;
+        repeater.add(option); 
     }
-
-
 };
 
 function getDistance(lat1, lon1, lat2, lon2) {
@@ -142,9 +150,22 @@ input.addEventListener("keypress", function(event) {
         var targetLat = data[0].lat;
         var targetLon = data[0].lon;
         console.log('-->', targetLat, targetLon)
-        var marker2 = L.marker([targetLat, targetLon]).addTo(map);
+        var marker2 = L.marker([targetLat, targetLon], {draggable:true}).addTo(map);
       });
 
   }
 }); 
+
+var repeaters = document.getElementById("repeaters");
+repeaters.addEventListener('change', function(event) {
+    repeaterPos.lat = parseFloat(event.target.value.split(',')[0])
+    repeaterPos.lon = parseFloat(event.target.value.split(',')[1])
+
+    if (repeaterPos.marker != null) {
+      map.removeLayer(repeaterPos.marker)
+    }
+    repeaterPos.marker = L.marker([repeaterPos.lat, repeaterPos.lon], {draggable:true}).addTo(map);
+  
+})
+
 
