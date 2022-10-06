@@ -1,12 +1,10 @@
-//var myPosLat = 0
-//var myPosLon = 0
-//var myPosAcc = 0
+let EARTH_R_m = 6371000; // m
+
 
 var myPos = {'coord':[]};
 var repeaterPos = {'coord':[]};
 var targetPos = {'coord':[]};
-//var repeaterLat = 0
-//var repeaterLon = 0
+
 
 let hamRepeaters = [
   {'name':'none', 'lat':null, 'lon':null},
@@ -100,12 +98,23 @@ repeaters.addEventListener('change', function(event) {
       console.log('--> not null', repeaterPos.coord)
       repeaterPos.marker = L.marker(repeaterPos.coord, {draggable:true}).addTo(map);
     }
-    
+    refreshScreenData()
 })
 
 
-function getDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371e3; // metres
+//function getDistance(lat1, lon1, lat2, lon2) {
+function getDistance(coord1, coord2) {
+  // https://www.movable-type.co.uk/scripts/latlong.html
+  /*const lat1 = degToRad(coord1[0]);
+  const lon1 = degToRad(coord1[1]);
+  const lat2 = degToRad(coord2[0]);
+  const lon2 = degToRad(coord2[1]);*/
+  const lat1 = coord1[0];
+  const lon1 = coord1[1];
+  const lat2 = coord2[0];
+  const lon2 = coord2[1];
+
+  //const R = 6371e3; // metres
   const phi1 = lat1 * Math.PI/180; // φ, λ in radians
   const phi2 = lat2 * Math.PI/180;
   const dphi = (lat2-lat1) * Math.PI/180;
@@ -116,17 +125,26 @@ function getDistance(lat1, lon1, lat2, lon2) {
             Math.sin(d_lambda/2) * Math.sin(d_lambda/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-  const d = R * c / 1000; // in km
+  const d = EARTH_R_m * c; // in km
   return d
 }
 
-function getDirection(lat1, lon1, lat2, lon2) {
+//function getDirection(lat1, lon1, lat2, lon2) {
+function getDirection(coord1, coord2) {
+  // https://www.movable-type.co.uk/scripts/latlong.html
+
+  const lat1 = degToRad(coord1[0]);
+  const lon1 = degToRad(coord1[1]);
+  const lat2 = degToRad(coord2[0]);
+  const lon2 = degToRad(coord2[1]);
+
   const y = Math.sin(lon2-lon1) * Math.cos(lat2);
   const x = Math.cos(lat1)*Math.sin(lat2) -
             Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1);
-  const θ = Math.atan2(y, x);
-  const brng = (θ*180/Math.PI + 360) % 360; // in degrees
-  return brng
+  const res = Math.atan2(y, x);
+  return radToDeg(res);
+  //const brng = (θ*180/Math.PI + 360) % 360; // in degrees
+  //return brng
 }
 
 function isLetter(data) {
@@ -271,11 +289,74 @@ function shiftCoord(point, bearing, distance) {
   return [radToDeg(lat2), radToDeg(lon2)]
 }
 
+function getCoordsLine(startCoord, bearing, distance, nr) {
+  var currentCoord = startCoord;
+  var resArr = [];
+  resArr.push(currentCoord)
+  for (var i=0; i<nr; i++) {
+    var res = shiftCoord(currentCoord, bearing, distance);
+    resArr.push(res);
+    currentCoord = res;
+  }
+  return resArr;
+}
 
+function getPointsBetweenCoords(startCoord, endCoord) {
+  const nrOfPoints = 100;
+  var distance = getDistance(startCoord, endCoord);
+  var bearing = getDirection(startCoord, endCoord);
+  console.log('startCoord: ', startCoord, 'endCoord: ', endCoord)
+  console.log('distance:', distance, 'bearing: ', bearing)
+  return getCoordsLine(startCoord, bearing, distance/nrOfPoints, nrOfPoints)
+}
 
+function getHeights(coords) {
+  var apiCoords = ''
+  for (var i=0; i< coords.length; i++) {
+    apiCoords += coords[i][0] + ',' + coords[i][1] + '|'
+  }
+  //console.log('-->', apiCoords.slice(0, -1))
+
+  fetch(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords.slice(0, -1))
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('response:', data.results)
+          var result = [];
+          var sumDistance = 0;
+          for (var i=1; i<data.results.length; i++) {
+            const currentPos = [data.results[i].latitude, data.results[i].longitude];
+            const prevPos = [data.results[i-1].latitude, data.results[i-1].longitude];
+
+            const dist = getDistance(prevPos, currentPos);
+            sumDistance += dist;
+            result.push([sumDistance, data.results[i].elevation]);
+            //console.log('-', data.results[i].elevation)
+          }
+
+          google.charts.load('current',{packages:['corechart']});
+          google.charts.setOnLoadCallback(drawChart);
+
+        });
+}
+
+function drawChart() {
+  // Set Data
+  var rawData = ['Magasság', 'Távolság'];
+  rawData.push([50,7],[60,8],[70,8],[80,9],[90,9],[100,9],[110,10],[120,11],[130,14],[140,14],[150,15])
+  var data = google.visualization.arrayToDataTable([rawData]);
+  // Set Options
+  var options = {
+    title: 'Szintmetszet',
+    hAxis: {title: 'Távolság [km]'},
+    vAxis: {title: 'Magasság [m]'},
+    legend: 'none'
+  };
+  // Draw Chart
+  var chart = new google.visualization.LineChart(document.getElementById('elevationGraph'));
+  chart.draw(data, options);
+  }
 
 function refreshScreenData() {
-
   if (!isNaN(myPos.coord[0])) {
     let mypos = document.getElementById("mypos");
     mypos.innerHTML = "coord: " + myPos.coord + "<br>accuracy" + myPos.acc;
@@ -295,14 +376,25 @@ function refreshScreenData() {
       map.removeLayer(targetPos.marker)
     }
     targetPos.marker = L.marker(targetPos.coord, {draggable:true}).addTo(map);
+
+    document.getElementById('targetData')
   }
 
 
   if (!isNaN(myPos.coord[0]) && !isNaN(repeaterPos[0])) {
-    var distance = getDistance(myPos.coord[0], myPos.coord[1], repeaterPos.coord[0], repeaterPos.coord[1]).toFixed(2);
-    var direction = getDirection(myPos.coord[0], myPos.coord[1], repeaterPos.coord[0], repeaterPos.coord[1]).toFixed(2);
+    var distance = getDistance(myPos.coord, repeaterPos.coord).toFixed(2);
+    var direction = getDirection(myPos.coord, repeaterPos.coord).toFixed(2);
     document.getElementById("dist_dir").innerHTML = "távolság:" + distance + " km<br>irány:" + direction + "°";
   }
 
+  if (!isNaN(myPos.coord[0]) && !isNaN(targetPos.coord[0])) {
+    var coords = getPointsBetweenCoords(myPos.coord, targetPos.coord);
+    console.log('points -->', coords)
+    
+    for (var i=0; i<coords.length; i++) {
+      L.marker(coords[i]).addTo(map);
+    }
+    getHeights(coords);
+  }
 
 } 
