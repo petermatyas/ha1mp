@@ -331,52 +331,10 @@ function getHeights(coords) {
     apiCoords += coords[i][0] + ',' + coords[i][1] + '|'
   }
   //console.log('-->', apiCoords.slice(0, -1))
-
-<<<<<<< Updated upstream
-  fetch(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords.slice(0, -1))
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('response:', data.results)
-          var result = [];
-          var sumDistance = 0;
-          for (var i=1; i<data.results.length; i++) {
-            const currentPos = [data.results[i].latitude, data.results[i].longitude];
-            const prevPos = [data.results[i-1].latitude, data.results[i-1].longitude];
-
-            const dist = getDistance(prevPos, currentPos);
-            sumDistance += dist;
-            result.push([sumDistance, data.results[i].elevation]);
-            //console.log('-', data.results[i].elevation)
-          }
-
-          google.charts.load('current',{packages:['corechart']});
-          google.charts.setOnLoadCallback(drawChart);
-
-        });
 }
 
-function drawChart() {
-  // Set Data
-  var rawData = ['Magasság', 'Távolság'];
-  rawData.push([50,7],[60,8],[70,8],[80,9],[90,9],[100,9],[110,10],[120,11],[130,14],[140,14],[150,15])
-  var data = google.visualization.arrayToDataTable([rawData]);
-  // Set Options
-  var options = {
-    title: 'Szintmetszet',
-    hAxis: {title: 'Távolság [km]'},
-    vAxis: {title: 'Magasság [m]'},
-    legend: 'none'
-  };
-  // Draw Chart
-  var chart = new google.visualization.LineChart(document.getElementById('elevationGraph'));
-  chart.draw(data, options);
-  }
-
-function refreshScreenData() {
-=======
 function refreshScreenData() {
   // myPos
->>>>>>> Stashed changes
   if (!isNaN(myPos.coord[0])) {
     let mypos = document.getElementById("mypos");
     mypos.innerHTML = "coord: " + myPos.coord + "<br>accuracy" + myPos.acc;
