@@ -22,7 +22,21 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 
+function startTime() {
+  const today = new Date();
+  let h = today.getUTCHours();
+  let m = today.getUTCMinutes();
+  let s = today.getUTCSeconds();
+  m = completeTime(m);
+  s = completeTime(s);
+  document.getElementById("utcClock").innerHTML =  h + ":" + m + ":" + s;
+  setTimeout(startTime, 1000);
+}
 
+function completeTime(i) {
+  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+  return i;
+}
 
 function getLocation() {
     if (navigator.geolocation) {
@@ -46,6 +60,7 @@ window.onload = function() {
     let x = document.getElementById("mypos");
     console.log('--', x)
     getLocation()
+    startTime()
 
     for (var i=0; i<hamRepeaters.length; i++) {
         var repeater = document.getElementById("repeaters");
@@ -63,7 +78,7 @@ function selectGateway(location) {
   repeaterPos.coord[1] = parseFloat(location.split(",")[1])
 
   refreshScreenData()
-  }
+}
   
 
 var input = document.getElementById("target");
@@ -317,6 +332,7 @@ function getHeights(coords) {
   }
   //console.log('-->', apiCoords.slice(0, -1))
 
+<<<<<<< Updated upstream
   fetch(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords.slice(0, -1))
         .then((response) => response.json())
         .then((data) => {
@@ -357,6 +373,10 @@ function drawChart() {
   }
 
 function refreshScreenData() {
+=======
+function refreshScreenData() {
+  // myPos
+>>>>>>> Stashed changes
   if (!isNaN(myPos.coord[0])) {
     let mypos = document.getElementById("mypos");
     mypos.innerHTML = "coord: " + myPos.coord + "<br>accuracy" + myPos.acc;
@@ -371,6 +391,7 @@ function refreshScreenData() {
     myPos.marker = L.marker(myPos.coord, {draggable:true}).addTo(map);
   }
   
+  // targetPos
   if (!isNaN(targetPos.coord[0])) {
     if (targetPos.marker != null) {
       map.removeLayer(targetPos.marker)
@@ -380,7 +401,12 @@ function refreshScreenData() {
     document.getElementById('targetData')
   }
 
+  // reepeaterPos
+  if (!isNaN(repeaterPos.coord[0])) {
+    
+  }
 
+  // myPos and repeaterPos
   if (!isNaN(myPos.coord[0]) && !isNaN(repeaterPos[0])) {
     var distance = getDistance(myPos.coord, repeaterPos.coord).toFixed(2);
     var direction = getDirection(myPos.coord, repeaterPos.coord).toFixed(2);
