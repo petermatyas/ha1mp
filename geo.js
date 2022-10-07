@@ -8,9 +8,17 @@ var targetPos = {'coord':[]};
 
 let hamRepeaters = [
   {'name':'none', 'lat':null, 'lon':null},
-  {'name':'Szombathely', 'lat':47.2376, 'lon':16.5857},
-  {'name':'Győr (Nyúl-hegy)', 'lat':47.58179, 'lon':17.6586},
-  {'name':'Zalaegerszeg ', 'lat':46.81357, 'lon':16.81226}
+  {'name':'Szombathely', 'lat':47.2376, 'lon':16.5857, 'band':'70cm', 'mode':{'analog':{'downlink':439.125, 'uplink':431.525, 'CTCSS_downlink':107.2, 'CTCSS_uplink':null}}},
+  {'name':'Győr (Nyúl-hegy) 70cm', 'lat':47.58179, 'lon':17.6586, 'band':'70cm', 'mode':{'analog':{'downlink':439.250, 'uplink':431.650, 'CTCSS_downlink':null, 'CTCSS_uplink':null}}},
+  {'name':'Zalaegerszeg ', 'lat':46.81357, 'lon':16.81226, 'band':'2m', 'mode':{'analog':{'downlink':145.6625, 'uplink':145.0625, 'CTCSS_downlink':107.2, 'CTCSS_uplink':null}}},
+  {'name':'Sopron', 'lat':47.66230, 'lon':16.56838, 'band':'2m', 'mode':{'analog':{'downlink':145.6875, 'uplink':145.0875, 'CTCSS_downlink':107.2, 'CTCSS_uplink':null}}},
+  {'name':'Kab-hegy', 'lat':47.04619, 'lon':17.65678, 'band':'70cm', 'mode':{'analog':{'downlink':439.400, 'uplink':434.675, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
+  {'name':'Kőrishegy', 'lat':47.29438, 'lon':17.75454, 'band':'2m', 'mode':{'analog':{'downlink':145.7125, 'uplink':145.1125, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
+  {'name':'Dorog', 'lat':47.71516, 'lon':18.72763, 'band':'2m', 'mode':{'analog':{'downlink':145.6625, 'uplink':145.0625, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
+
+
+
+
 ]
 
 
@@ -65,7 +73,8 @@ window.onload = function() {
     for (var i=0; i<hamRepeaters.length; i++) {
         var repeater = document.getElementById("repeaters");
         var option = document.createElement("option");
-        option.value = hamRepeaters[i].lat + ',' + hamRepeaters[i].lon
+        //option.value = hamRepeaters[i].lat + ',' + hamRepeaters[i].lon
+        option.value = hamRepeaters[i].name;
         option.text = hamRepeaters[i].name;
         repeater.add(option); 
     }
@@ -73,12 +82,25 @@ window.onload = function() {
 
 
 
-function selectGateway(location) {
-  repeaterPos.coord[0] = parseFloat(location.split(",")[0])
-  repeaterPos.coord[1] = parseFloat(location.split(",")[1])
+document.getElementById("repeaters").addEventListener("change", function(event) {
+  //console.log('<>', event.target.value);
+  const res = hamRepeaters.filter(hamRepeaters => hamRepeaters.name == event.target.value)[0];
+  //console.log(res.name)
+  repeaterPos.coord[0] = parseFloat(res.lat);
+  repeaterPos.coord[1] = parseFloat(res.lon);
+  repeaterPos.name = res.name;
 
   refreshScreenData()
-}
+});
+
+
+/*function selectGateway(repeater) {
+  console.log('====', repeater)
+  repeaterPos.coord[0] = parseFloat(repeater.split(",")[0])
+  repeaterPos.coord[1] = parseFloat(repeater.split(",")[1])
+
+  refreshScreenData()
+}*/
   
 
 var input = document.getElementById("target");
@@ -101,29 +123,26 @@ input.addEventListener("keypress", function(event) {
 
 var repeaters = document.getElementById("repeaters");
 repeaters.addEventListener('change', function(event) {
-    repeaterPos.coord[0] = parseFloat(event.target.value.split(',')[0])
-    repeaterPos.coord[1] = parseFloat(event.target.value.split(',')[1])
+    const res = hamRepeaters.filter(hamRepeaters => hamRepeaters.name == event.target.value)[0];
+    console.log(res)
+    repeaterPos.coord[0] = parseFloat(res.lat)
+    repeaterPos.coord[1] = parseFloat(res.lon)
 
     if (repeaterPos.marker != null) {
       console.log('repeater marker remove')
       map.removeLayer(repeaterPos.marker)
     }
 
-    if (!isNaN(repeaterPos.coord[0]) || !isNaN(repeaterPos.coord[1])) {
-      console.log('--> not null', repeaterPos.coord)
+    if (!isNaN(repeaterPos.coord[0])) {
+      console.log('--> repeater coord', repeaterPos.coord)
       repeaterPos.marker = L.marker(repeaterPos.coord, {draggable:true}).addTo(map);
     }
     refreshScreenData()
 })
 
 
-//function getDistance(lat1, lon1, lat2, lon2) {
 function getDistance(coord1, coord2) {
   // https://www.movable-type.co.uk/scripts/latlong.html
-  /*const lat1 = degToRad(coord1[0]);
-  const lon1 = degToRad(coord1[1]);
-  const lat2 = degToRad(coord2[0]);
-  const lon2 = degToRad(coord2[1]);*/
   const lat1 = coord1[0];
   const lon1 = coord1[1];
   const lat2 = coord2[0];
@@ -144,10 +163,8 @@ function getDistance(coord1, coord2) {
   return d
 }
 
-//function getDirection(lat1, lon1, lat2, lon2) {
 function getDirection(coord1, coord2) {
   // https://www.movable-type.co.uk/scripts/latlong.html
-
   const lat1 = degToRad(coord1[0]);
   const lon1 = degToRad(coord1[1]);
   const lat2 = degToRad(coord2[0]);
@@ -246,7 +263,7 @@ function locatorToLatLon(locatorStr) {
   return {'coord':[lat+(lat2-lat)/2, lon+(lon2-lon)/2], 'square':[[lat, lon], [lat2, lon2]]}
 }
 
-function LatLonToLocator(coord, num) {
+function latLonToLocator(coord, num) {
   x = coord[1]
   y = coord[0]
   if (x<-180) {x=x+360;}
@@ -336,16 +353,25 @@ function getHeights(coords) {
 function refreshScreenData() {
   // myPos
   if (!isNaN(myPos.coord[0])) {
-    let mypos = document.getElementById("mypos");
-    mypos.innerHTML = "coord: " + myPos.coord + "<br>accuracy" + myPos.acc;
 
-    var locator = LatLonToLocator(myPos.coord, 6)
-    console.log('locator', locator)
-    document.getElementById("mylocator").innerHTML = locator;
+    //let mypos = document.getElementById("mypos");
+    //mypos.innerHTML = "coord: " + myPos.coord + "<br>accuracy" + myPos.acc;
+
+    document.getElementById("myCoord").innerHTML = myPos.coord;
+    document.getElementById("myGpsAccuracy").innerHTML = myPos.acc;
+    document.getElementById("myLocator").innerHTML = latLonToLocator(myPos.coord, 10);
+    
+    
+
 
     var latLon = L.latLng(myPos.coord[0], myPos.coord[1]);
     map.setView(latLon, 11, { animation: true });   
     
+
+
+    if (myPos.marker != null) {
+      map.removeLayer(myPos.marker)
+    }
     myPos.marker = L.marker(myPos.coord, {draggable:true}).addTo(map);
   }
   
@@ -359,16 +385,45 @@ function refreshScreenData() {
     document.getElementById('targetData')
   }
 
-  // reepeaterPos
+  // repeaterPos
   if (!isNaN(repeaterPos.coord[0])) {
+    //document.getElementById("repeaterData").style.display = "block";
+
+    console.log(repeaterPos.name)
+    if (repeaterPos.name != null) {
+
+      //repeaterPos.marker = L.marker(repeaterPos.coord).addTo(map);
+
+      document.getElementById("repeaterPos").innerHTML = repeaterPos.coord;
+      document.getElementById("repeaterLocator").innerHTML = latLonToLocator(repeaterPos.coord, 10);
+      const repeaterData = hamRepeaters.filter(hamRepeaters => hamRepeaters.name == repeaterPos.name)[0];
+      //console.log('-----', repeaterData)
+      document.getElementById("downLink").innerHTML = repeaterData.mode.analog.downlink;
+      document.getElementById("upLink").innerHTML = repeaterData.mode.analog.uplink;
+    } else {
+      document.getElementById("repeaterPos").innerHTML = '';
+      document.getElementById("repeaterLocator").innerHTML = '';
+      document.getElementById("downLink").innerHTML = '';
+      document.getElementById("upLink").innerHTML = '';
+    }
     
+  } else {
+    //document.getElementById("repeaterData").style.display = "none";
   }
 
   // myPos and repeaterPos
-  if (!isNaN(myPos.coord[0]) && !isNaN(repeaterPos[0])) {
+  console.log(!isNaN(myPos.coord[0]), !isNaN(repeaterPos[0]))
+  console.log()
+  if (!isNaN(myPos.coord[0]) && !isNaN(repeaterPos.coord[0])) {
+
+    console.log('my and repeater data available')
     var distance = getDistance(myPos.coord, repeaterPos.coord).toFixed(2);
     var direction = getDirection(myPos.coord, repeaterPos.coord).toFixed(2);
-    document.getElementById("dist_dir").innerHTML = "távolság:" + distance + " km<br>irány:" + direction + "°";
+    //document.getElementById("dist_dir").innerHTML = "távolság:" + distance + " km<br>irány:" + direction + "°";
+
+    document.getElementById("myRepeaterDistance").innerHTML = distance/1000 + " km";
+    document.getElementById("myRepeaterBearing").innerHTML = direction+360%360 + "°";
+
   }
 
   if (!isNaN(myPos.coord[0]) && !isNaN(targetPos.coord[0])) {
