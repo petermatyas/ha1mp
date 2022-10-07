@@ -5,6 +5,10 @@ var myPos = {'coord':[]};
 var repeaterPos = {'coord':[]};
 var targetPos = {'coord':[]};
 
+let hamRepeaters2 = [
+  {'name':'Szombathely', 'coordinate':[47.2376,16.5857], }
+]
+
 
 let hamRepeaters = [
   {'name':'none', 'lat':null, 'lon':null},
@@ -15,9 +19,10 @@ let hamRepeaters = [
   {'name':'Kab-hegy', 'lat':47.04619, 'lon':17.65678, 'band':'70cm', 'mode':{'analog':{'downlink':439.400, 'uplink':434.675, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
   {'name':'Kőrishegy', 'lat':47.29438, 'lon':17.75454, 'band':'2m', 'mode':{'analog':{'downlink':145.7125, 'uplink':145.1125, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
   {'name':'Dorog', 'lat':47.71516, 'lon':18.72763, 'band':'2m', 'mode':{'analog':{'downlink':145.6625, 'uplink':145.0625, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
-
-
-
+  {'name':'Esztergom', 'lat':47.75029, 'lon':18.46796},
+  {'name':'Fonyód', 'lat':46.73782, 'lon':17.54303},
+  {'name':'Székesfehérvár', 'lat':47.1808, 'lon':18.4325},
+  {'name':'Gerecse', 'lat':47.67627, 'lon':18.49402},
 
 ]
 
@@ -66,7 +71,6 @@ function showPosition(position) {
 
 window.onload = function() {
     let x = document.getElementById("mypos");
-    console.log('--', x)
     getLocation()
     startTime()
 
@@ -398,13 +402,13 @@ function refreshScreenData() {
       document.getElementById("repeaterLocator").innerHTML = latLonToLocator(repeaterPos.coord, 10);
       const repeaterData = hamRepeaters.filter(hamRepeaters => hamRepeaters.name == repeaterPos.name)[0];
       //console.log('-----', repeaterData)
-      document.getElementById("downLink").innerHTML = repeaterData.mode.analog.downlink;
-      document.getElementById("upLink").innerHTML = repeaterData.mode.analog.uplink;
+      //document.getElementById("downLink").innerHTML = repeaterData.mode.analog.downlink;
+      //document.getElementById("upLink").innerHTML = repeaterData.mode.analog.uplink;
     } else {
       document.getElementById("repeaterPos").innerHTML = '';
       document.getElementById("repeaterLocator").innerHTML = '';
-      document.getElementById("downLink").innerHTML = '';
-      document.getElementById("upLink").innerHTML = '';
+      //document.getElementById("downLink").innerHTML = '';
+      //document.getElementById("upLink").innerHTML = '';
     }
     
   } else {
@@ -412,13 +416,11 @@ function refreshScreenData() {
   }
 
   // myPos and repeaterPos
-  console.log(!isNaN(myPos.coord[0]), !isNaN(repeaterPos[0]))
-  console.log()
   if (!isNaN(myPos.coord[0]) && !isNaN(repeaterPos.coord[0])) {
 
     console.log('my and repeater data available')
-    var distance = getDistance(myPos.coord, repeaterPos.coord).toFixed(2);
-    var direction = getDirection(myPos.coord, repeaterPos.coord).toFixed(2);
+    const distance = getDistance(myPos.coord, repeaterPos.coord).toFixed(2);
+    const direction = getDirection(myPos.coord, repeaterPos.coord).toFixed(2);
     //document.getElementById("dist_dir").innerHTML = "távolság:" + distance + " km<br>irány:" + direction + "°";
 
     document.getElementById("myRepeaterDistance").innerHTML = distance/1000 + " km";
@@ -426,14 +428,17 @@ function refreshScreenData() {
 
   }
 
-  if (!isNaN(myPos.coord[0]) && !isNaN(targetPos.coord[0])) {
-    var coords = getPointsBetweenCoords(myPos.coord, targetPos.coord);
-    console.log('points -->', coords)
-    
+  if (!isNaN(myPos.coord[0]) && !isNaN(targetPos.coord[0])) {    
+    const distance = getDistance(myPos.coord, targetPos.coord).toFixed(2);
+    const direction = getDirection(myPos.coord, targetPos.coord).toFixed(1);
+    document.getElementById("myTargetDistance").innerHTML = distance/1000 + " km";
+    document.getElementById("myTargetBearing").innerHTML = direction+360%360 + "°";
+
+    /*var coords = getPointsBetweenCoords(myPos.coord, targetPos.coord);
     for (var i=0; i<coords.length; i++) {
       L.marker(coords[i]).addTo(map);
-    }
-    getHeights(coords);
+    }*/
+    //getHeights(coords);
   }
 
 } 

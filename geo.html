@@ -34,12 +34,13 @@
 <body>
   <div class="container">
     <div class="row">
-      <div class="col m3">
-
+      <div class="col-md-4 column">
         <div class="row">
+          Saját QTH
+          <input id="antennaHeight" class="form-control" type="text" placeholder="antenna magasság">
           <table class="table table-sm">
             <tr>
-              <td>UTC idő</td>
+              <td>QTR</td>
               <td id="utcClock"></td>
             </tr>
             <tr>
@@ -56,13 +57,9 @@
             </tr>
           </table>
         </div>
-
-
-
-
-
       </div>
-      <div class="col">
+
+      <div class="col-md-4 column">
         <div class="row">
           Átjátszó
           <!--<select id="repeaters" class="form-select" aria-label="Default select example" onchange="selectGateway(this.options[this.selectedIndex].value)"></select>-->
@@ -71,43 +68,63 @@
         <div id="repeaterData" class="row">
           <table class="table table-sm">
             <tr>
-              <td>GPS koordináta</td><td id="repeaterPos"></td>
+              <td>_</td>
             </tr>
             <tr>
-              <td>Lokátor</td><td id="repeaterLocator"></td>
+              <td>GPS koordináta</td>
+              <td id="repeaterPos"></td>
             </tr>
             <tr>
+              <td>_</td>
+            </tr>
+            <tr>
+              <td>Lokátor</td>
+              <td id="repeaterLocator"></td>
+            </tr>
+            <!--<tr>
               <td>Lejövő [MHz]</td><td id="downLink"></td>
             </tr>
             <tr>
               <td>Felmenő [MHz]</td><td id="upLink"></td>
-            </tr>
+            </tr>-->
           </table>
           <p id="dist_dir"></p>
         </div>
 
       </div>
-      <div class="col">
-        <input id="target" class="form-control" type="text" placeholder="Default input">
+      <div class="col-md-4 column">
+        Cél QTH
+        <input id="target" class="form-control" type="text" placeholder="QTH">
       </div>
     </div>
 
 
     <div id="myRepeaterData" class="row">
-      <div class="column">
+      <div class="col">
+        Saját - átjátszó
         <table class="table">
           <tr>
-            <td>Távolság</td>
+            <td>QRB</td>
             <td id="myRepeaterDistance"></td>
           </tr>
           <tr>
-            <td>Irány</td>
+            <td>QTF</td>
             <td id="myRepeaterBearing"></td>
           </tr>
         </table>
       </div>
-      <div class="column">
-
+      <div class="col">
+        Saját - cél
+        <table class="table">
+          <tr>
+            <td>QRB</td>
+            <td id="myTargetDistance"></td>
+          </tr>
+          <tr>
+            <td>QTF</td>
+            <td id="myTargetBearing"></td>
+          </tr>
+        </table>
       </div>
     </div>
 
