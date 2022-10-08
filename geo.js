@@ -325,7 +325,7 @@ function shiftCoord(point, bearing, distance) {
   return [radToDeg(lat2), radToDeg(lon2)]
 }
 
-function getCoordsLine(startCoord, bearing, distance, nr) {
+/*function getCoordsLine(startCoord, bearing, distance, nr) {
   var currentCoord = startCoord;
   var resArr = [];
   resArr.push(currentCoord)
@@ -335,24 +335,84 @@ function getCoordsLine(startCoord, bearing, distance, nr) {
     currentCoord = res;
   }
   return resArr;
-}
+}*/
 
 function getPointsBetweenCoords(startCoord, endCoord) {
   const nrOfPoints = 100;
   var distance = getDistance(startCoord, endCoord);
-  var bearing = getDirection(startCoord, endCoord);
-  console.log('startCoord: ', startCoord, 'endCoord: ', endCoord)
-  console.log('distance:', distance, 'bearing: ', bearing)
-  return getCoordsLine(startCoord, bearing, distance/nrOfPoints, nrOfPoints)
+  
+  //console.log('startCoord: ', startCoord, 'endCoord: ', endCoord)
+  //console.log('distance:', distance, 'bearing: ', bearing)
+  const d = distance / nrOfPoints;
+  var actualCoord = startCoord;
+  var res = [startCoord];
+  for (var i=0; i<nrOfPoints; i++) {
+    var bearing = getDirection(actualCoord, endCoord);
+    var nextCoord = shiftCoord(actualCoord, bearing, d);
+    res.push(nextCoord)
+    actualCoord = nextCoord;
+  }
+
+  //return getCoordsLine(startCoord, bearing, distance/nrOfPoints, nrOfPoints)
+  return res;
 }
 
 function getHeights(coords) {
-  var apiCoords = ''
-  for (var i=0; i< coords.length; i++) {
-    apiCoords += coords[i][0] + ',' + coords[i][1] + '|'
+  var apiCoords = '';
+  for (var i=0; i<coords.length; i++) {
+    apiCoords += coords[i][0]+','+coords[i][1]+'|'
   }
-  //console.log('-->', apiCoords.slice(0, -1))
+  apiCoords = apiCoords.slice(0,-1)
+  //console.log(apiCoords)
+  
+  fetch(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords)
+    .then((response) => response.json())
+    .then((data) => {
+      var res = [];
+      const firstCoord = [data.results[0].latitude, data.results[0].longitude];
+      const lastCoord = [data.results[data.results.length-1].latitude, data.results[data.results.length-1].longitude];
+      const dist = getDistance(firstCoord, lastCoord) / data.results.length;
+      //console.log('dist', firstCoord, lastCoord, data.results.length)
+      var actualDist = 0
+      for (var i=0; i<data.results.length; i++) {
+        //console.log([actualDist, data.results[i].elevation])
+        res.push([actualDist, data.results[i].elevation])
+        actualDist += dist
+      }
+      //console.log(res)
+      return res;
+    });
 }
+
+google.load('visualization', '1', {
+  packages: ['corechart', 'bar', 'line']
+});
+
+google.setOnLoadCallback(function () {
+  // LINE CHART
+  var data = new google.visualization.DataTable();
+  data.addColumn('number', 'Day');
+  data.addColumn('number', 'aaa');
+  
+  data.addRows([
+      [1, 37.8],
+      [2, 30.9],
+      [3, 25.4],
+      [4, 11.7],
+      [5, 11.9],
+  ]);
+
+  var options = {
+      chart: {
+          title: 'cím',
+      },
+      colors: ['#6e4ff5']
+  };
+
+  var chart = new google.charts.Line(document.getElementById('elevationGraph'));
+  chart.draw(data, options);
+});
+
 
 function refreshScreenData() {
   // myPos
@@ -434,11 +494,13 @@ function refreshScreenData() {
     document.getElementById("myTargetDistance").innerHTML = distance/1000 + " km";
     document.getElementById("myTargetBearing").innerHTML = direction+360%360 + "°";
 
-    /*var coords = getPointsBetweenCoords(myPos.coord, targetPos.coord);
+    var coords = getPointsBetweenCoords(myPos.coord, targetPos.coord);
+    //console.log(coords)
     for (var i=0; i<coords.length; i++) {
       L.marker(coords[i]).addTo(map);
-    }*/
-    //getHeights(coords);
+    }
+    var heights = getHeights(coords);
+    console.log('heights', heights);
   }
 
 } 
