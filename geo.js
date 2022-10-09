@@ -10,7 +10,7 @@ let hamRepeaters2 = [
 ]
 
 
-let hamRepeaters = [
+/*const hamRepeaters = [
   {'name':'none', 'lat':null, 'lon':null},
   {'name':'Szombathely', 'lat':47.2376, 'lon':16.5857, 'band':'70cm', 'mode':{'analog':{'downlink':439.125, 'uplink':431.525, 'CTCSS_downlink':107.2, 'CTCSS_uplink':null}}},
   {'name':'Győr (Nyúl-hegy) 70cm', 'lat':47.58179, 'lon':17.6586, 'band':'70cm', 'mode':{'analog':{'downlink':439.250, 'uplink':431.650, 'CTCSS_downlink':null, 'CTCSS_uplink':null}}},
@@ -24,7 +24,7 @@ let hamRepeaters = [
   {'name':'Székesfehérvár', 'lat':47.1808, 'lon':18.4325},
   {'name':'Gerecse', 'lat':47.67627, 'lon':18.49402},
 
-]
+]*/
 
 
 var map = L.map('map').setView([51.505, -0.09], 13);
@@ -365,9 +365,11 @@ function getHeights(coords) {
   apiCoords = apiCoords.slice(0,-1)
   //console.log(apiCoords)
   
-  fetch(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords)
-    .then((response) => response.json())
+  // https://cors-anywhere.herokuapp.com/
+  fetch(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords,)
+    .then((response) => {response.json()})
     .then((data) => {
+      console.log('data',data);
       var res = [];
       const firstCoord = [data.results[0].latitude, data.results[0].longitude];
       const lastCoord = [data.results[data.results.length-1].latitude, data.results[data.results.length-1].longitude];
@@ -379,16 +381,19 @@ function getHeights(coords) {
         res.push([actualDist, data.results[i].elevation])
         actualDist += dist
       }
-      //console.log(res)
-      return res;
+      console.log('--->', res)
+      //return res;
     });
+    /*.then((data) => {
+      drawElevationGrpah(data)
+    });*/
 }
 
 google.load('visualization', '1', {
   packages: ['corechart', 'bar', 'line']
 });
 
-google.setOnLoadCallback(function () {
+/*google.setOnLoadCallback(function () {
   // LINE CHART
   var data = new google.visualization.DataTable();
   data.addColumn('number', 'Day');
@@ -411,7 +416,33 @@ google.setOnLoadCallback(function () {
 
   var chart = new google.charts.Line(document.getElementById('elevationGraph'));
   chart.draw(data, options);
-});
+});*/
+
+function drawElevationGrpah(dataArr) {
+  var data = new google.visualization.DataTable();
+  data.addColumn('number', 'Day');
+  data.addColumn('number', 'aaa');
+  
+  /*data.addRows([
+      [1, 37.8],
+      [2, 30.9],
+      [3, 25.4],
+      [4, 11.7],
+      [5, 11.9],
+  ]);*/
+
+  data.addRows(dataArr)
+
+  var options = {
+      chart: {
+          title: 'cím',
+      },
+      colors: ['#6e4ff5']
+  };
+
+  var chart = new google.charts.Line(document.getElementById('elevationGraph'));
+  chart.draw(data, options);
+}
 
 
 function refreshScreenData() {
@@ -499,8 +530,8 @@ function refreshScreenData() {
     for (var i=0; i<coords.length; i++) {
       L.marker(coords[i]).addTo(map);
     }
-    var heights = getHeights(coords);
-    console.log('heights', heights);
+    getHeights(coords);
+
   }
 
 } 
