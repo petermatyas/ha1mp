@@ -4,27 +4,9 @@ let EARTH_R_m = 6371000; // m
 var myPos = {'coord':[]};
 var repeaterPos = {'coord':[]};
 var targetPos = {'coord':[]};
+var my_target = {};
+var my_repeater = {};
 
-let hamRepeaters2 = [
-  {'name':'Szombathely', 'coordinate':[47.2376,16.5857], }
-]
-
-
-/*const hamRepeaters = [
-  {'name':'none', 'lat':null, 'lon':null},
-  {'name':'Szombathely', 'lat':47.2376, 'lon':16.5857, 'band':'70cm', 'mode':{'analog':{'downlink':439.125, 'uplink':431.525, 'CTCSS_downlink':107.2, 'CTCSS_uplink':null}}},
-  {'name':'Győr (Nyúl-hegy) 70cm', 'lat':47.58179, 'lon':17.6586, 'band':'70cm', 'mode':{'analog':{'downlink':439.250, 'uplink':431.650, 'CTCSS_downlink':null, 'CTCSS_uplink':null}}},
-  {'name':'Zalaegerszeg ', 'lat':46.81357, 'lon':16.81226, 'band':'2m', 'mode':{'analog':{'downlink':145.6625, 'uplink':145.0625, 'CTCSS_downlink':107.2, 'CTCSS_uplink':null}}},
-  {'name':'Sopron', 'lat':47.66230, 'lon':16.56838, 'band':'2m', 'mode':{'analog':{'downlink':145.6875, 'uplink':145.0875, 'CTCSS_downlink':107.2, 'CTCSS_uplink':null}}},
-  {'name':'Kab-hegy', 'lat':47.04619, 'lon':17.65678, 'band':'70cm', 'mode':{'analog':{'downlink':439.400, 'uplink':434.675, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
-  {'name':'Kőrishegy', 'lat':47.29438, 'lon':17.75454, 'band':'2m', 'mode':{'analog':{'downlink':145.7125, 'uplink':145.1125, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
-  {'name':'Dorog', 'lat':47.71516, 'lon':18.72763, 'band':'2m', 'mode':{'analog':{'downlink':145.6625, 'uplink':145.0625, 'CTCSS_downlink':107.2, 'CTCSS_uplink':107.2}}},
-  {'name':'Esztergom', 'lat':47.75029, 'lon':18.46796},
-  {'name':'Fonyód', 'lat':46.73782, 'lon':17.54303},
-  {'name':'Székesfehérvár', 'lat':47.1808, 'lon':18.4325},
-  {'name':'Gerecse', 'lat':47.67627, 'lon':18.49402},
-
-]*/
 
 
 var map = L.map('map').setView([51.505, -0.09], 13);
@@ -47,16 +29,16 @@ function startTime() {
 }
 
 function completeTime(i) {
-  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
-  return i;
+  	if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+  	return i;
 }
 
 function getLocation() {
     if (navigator.geolocation) {
         return navigator.geolocation.getCurrentPosition(showPosition)
-      } else {
+    } else {
         console.log("Geolocation is not supported by this browser.");
-      }
+    }
 }
 
 function showPosition(position) {
@@ -65,7 +47,7 @@ function showPosition(position) {
     myPos.coord[1] = position.coords.longitude;
     myPos.acc = position.coords.accuracy;
     refreshScreenData();
-  }
+}
 
 
 
@@ -87,29 +69,20 @@ window.onload = function() {
 
 
 document.getElementById("repeaters").addEventListener("change", function(event) {
-  //console.log('<>', event.target.value);
-  const res = hamRepeaters.filter(hamRepeaters => hamRepeaters.name == event.target.value)[0];
-  //console.log(res.name)
-  repeaterPos.coord[0] = parseFloat(res.lat);
-  repeaterPos.coord[1] = parseFloat(res.lon);
-  repeaterPos.name = res.name;
+	//console.log('<>', event.target.value);
+	const res = hamRepeaters.filter(hamRepeaters => hamRepeaters.name == event.target.value)[0];
+	//console.log(res.name)
+	repeaterPos.coord[0] = parseFloat(res.lat);
+	repeaterPos.coord[1] = parseFloat(res.lon);
+	repeaterPos.name = res.name;
 
-  refreshScreenData()
+	refreshScreenData()
 });
 
 
-/*function selectGateway(repeater) {
-  console.log('====', repeater)
-  repeaterPos.coord[0] = parseFloat(repeater.split(",")[0])
-  repeaterPos.coord[1] = parseFloat(repeater.split(",")[1])
-
-  refreshScreenData()
-}*/
-  
-
 var input = document.getElementById("target");
 input.addEventListener("keypress", function(event) {
-  if (event.key === "Enter") {
+  	if (event.key === "Enter") {
 
     if (isValidLocator(input.value)) {
       targetPos.coord = locatorToLatLon(input.value).coord
@@ -133,38 +106,37 @@ repeaters.addEventListener('change', function(event) {
     repeaterPos.coord[1] = parseFloat(res.lon)
 
     if (repeaterPos.marker != null) {
-      console.log('repeater marker remove')
-      map.removeLayer(repeaterPos.marker)
+		console.log('repeater marker remove')
+		map.removeLayer(repeaterPos.marker)
     }
 
     if (!isNaN(repeaterPos.coord[0])) {
-      console.log('--> repeater coord', repeaterPos.coord)
-      repeaterPos.marker = L.marker(repeaterPos.coord, {draggable:true}).addTo(map);
+		//console.log('--> repeater coord', repeaterPos.coord)
+		repeaterPos.marker = L.marker(repeaterPos.coord, {draggable:true}).addTo(map);
     }
     refreshScreenData()
 })
 
 
 function getDistance(coord1, coord2) {
-  // https://www.movable-type.co.uk/scripts/latlong.html
-  const lat1 = coord1[0];
-  const lon1 = coord1[1];
-  const lat2 = coord2[0];
-  const lon2 = coord2[1];
+	// https://www.movable-type.co.uk/scripts/latlong.html
+	const lat1 = coord1[0];
+	const lon1 = coord1[1];
+	const lat2 = coord2[0];
+	const lon2 = coord2[1];
 
-  //const R = 6371e3; // metres
-  const phi1 = lat1 * Math.PI/180; // φ, λ in radians
-  const phi2 = lat2 * Math.PI/180;
-  const dphi = (lat2-lat1) * Math.PI/180;
-  const d_lambda = (lon2-lon1) * Math.PI/180;
+	const phi1 = lat1 * Math.PI/180; // φ, λ in radians
+	const phi2 = lat2 * Math.PI/180;
+	const dphi = (lat2-lat1) * Math.PI/180;
+	const d_lambda = (lon2-lon1) * Math.PI/180;
 
-  const a = Math.sin(dphi/2) * Math.sin(dphi/2) +
-            Math.cos(phi1) * Math.cos(phi2) *
-            Math.sin(d_lambda/2) * Math.sin(d_lambda/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+	const a = Math.sin(dphi/2) * Math.sin(dphi/2) +
+				Math.cos(phi1) * Math.cos(phi2) *
+				Math.sin(d_lambda/2) * Math.sin(d_lambda/2);
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-  const d = EARTH_R_m * c; // in km
-  return d
+	const d = EARTH_R_m * c; // in km
+	return d
 }
 
 function getDirection(coord1, coord2) {
@@ -357,7 +329,23 @@ function getPointsBetweenCoords(startCoord, endCoord) {
   return res;
 }
 
-function getHeights(coords) {
+function processHeights(data) {
+  var res = [];
+  const firstCoord = [data.results[0].latitude, data.results[0].longitude];
+  const lastCoord = [data.results[data.results.length-1].latitude, data.results[data.results.length-1].longitude];
+  const dist = getDistance(firstCoord, lastCoord) / 1000 / data.results.length;
+  //console.log('dist', firstCoord, lastCoord, data.results.length)
+  var actualDist = 0
+  for (var i=0; i<data.results.length; i++) {
+    //console.log([actualDist, data.results[i].elevation])
+    res.push([actualDist, data.results[i].elevation])
+    actualDist += dist
+  }
+  console.log('--->', res)
+  return res
+}
+
+async function getHeights(coords) {
   var apiCoords = '';
   for (var i=0; i<coords.length; i++) {
     apiCoords += coords[i][0]+','+coords[i][1]+'|'
@@ -366,70 +354,21 @@ function getHeights(coords) {
   //console.log(apiCoords)
   
   // https://cors-anywhere.herokuapp.com/
-  fetch(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords,)
-    .then((response) => {response.json()})
-    .then((data) => {
-      console.log('data',data);
-      var res = [];
-      const firstCoord = [data.results[0].latitude, data.results[0].longitude];
-      const lastCoord = [data.results[data.results.length-1].latitude, data.results[data.results.length-1].longitude];
-      const dist = getDistance(firstCoord, lastCoord) / data.results.length;
-      //console.log('dist', firstCoord, lastCoord, data.results.length)
-      var actualDist = 0
-      for (var i=0; i<data.results.length; i++) {
-        //console.log([actualDist, data.results[i].elevation])
-        res.push([actualDist, data.results[i].elevation])
-        actualDist += dist
-      }
-      console.log('--->', res)
-      //return res;
-    });
-    /*.then((data) => {
-      drawElevationGrpah(data)
-    });*/
+  //console.log(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords)
+  let response = await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=`+apiCoords);
+  let data = await response.json();
+  let data2 = await processHeights(data)
+  drawElevationGrpah(data2)
 }
 
 google.load('visualization', '1', {
   packages: ['corechart', 'bar', 'line']
 });
 
-/*google.setOnLoadCallback(function () {
-  // LINE CHART
-  var data = new google.visualization.DataTable();
-  data.addColumn('number', 'Day');
-  data.addColumn('number', 'aaa');
-  
-  data.addRows([
-      [1, 37.8],
-      [2, 30.9],
-      [3, 25.4],
-      [4, 11.7],
-      [5, 11.9],
-  ]);
-
-  var options = {
-      chart: {
-          title: 'cím',
-      },
-      colors: ['#6e4ff5']
-  };
-
-  var chart = new google.charts.Line(document.getElementById('elevationGraph'));
-  chart.draw(data, options);
-});*/
-
 function drawElevationGrpah(dataArr) {
   var data = new google.visualization.DataTable();
-  data.addColumn('number', 'Day');
-  data.addColumn('number', 'aaa');
-  
-  /*data.addRows([
-      [1, 37.8],
-      [2, 30.9],
-      [3, 25.4],
-      [4, 11.7],
-      [5, 11.9],
-  ]);*/
+  data.addColumn('number', 'Távolság [km]');
+  data.addColumn('number', 'Magasság [m]');
 
   data.addRows(dataArr)
 
@@ -437,7 +376,8 @@ function drawElevationGrpah(dataArr) {
       chart: {
           title: 'cím',
       },
-      colors: ['#6e4ff5']
+      colors: ['#6e4ff5'],
+      legend: {position: 'none'}
   };
 
   var chart = new google.charts.Line(document.getElementById('elevationGraph'));
@@ -446,6 +386,7 @@ function drawElevationGrpah(dataArr) {
 
 
 function refreshScreenData() {
+
   // myPos
   if (!isNaN(myPos.coord[0])) {
 
@@ -455,19 +396,28 @@ function refreshScreenData() {
     document.getElementById("myCoord").innerHTML = myPos.coord;
     document.getElementById("myGpsAccuracy").innerHTML = myPos.acc;
     document.getElementById("myLocator").innerHTML = latLonToLocator(myPos.coord, 10);
-    
-    
-
+  
 
     var latLon = L.latLng(myPos.coord[0], myPos.coord[1]);
     map.setView(latLon, 11, { animation: true });   
     
-
-
     if (myPos.marker != null) {
       map.removeLayer(myPos.marker)
     }
     myPos.marker = L.marker(myPos.coord, {draggable:true}).addTo(map);
+	myPos.marker.on('dragend', function(event){
+		
+		var marker = event.target;
+		var position = marker.getLatLng();
+		
+		myPos.marker = [position.lat, position.lng]
+		map.removeLayer(myPos.marker)
+		console.log(myPos.marker)
+		refreshScreenData()
+
+		//marker.setLatLng(new L.LatLng(position.lat, position.lng),{draggable:'true'});
+		//map.panTo(new L.LatLng(position.lat, position.lng))
+	  });
   }
   
   // targetPos
@@ -486,20 +436,12 @@ function refreshScreenData() {
 
     console.log(repeaterPos.name)
     if (repeaterPos.name != null) {
-
-      //repeaterPos.marker = L.marker(repeaterPos.coord).addTo(map);
-
       document.getElementById("repeaterPos").innerHTML = repeaterPos.coord;
       document.getElementById("repeaterLocator").innerHTML = latLonToLocator(repeaterPos.coord, 10);
       const repeaterData = hamRepeaters.filter(hamRepeaters => hamRepeaters.name == repeaterPos.name)[0];
-      //console.log('-----', repeaterData)
-      //document.getElementById("downLink").innerHTML = repeaterData.mode.analog.downlink;
-      //document.getElementById("upLink").innerHTML = repeaterData.mode.analog.uplink;
     } else {
       document.getElementById("repeaterPos").innerHTML = '';
       document.getElementById("repeaterLocator").innerHTML = '';
-      //document.getElementById("downLink").innerHTML = '';
-      //document.getElementById("upLink").innerHTML = '';
     }
     
   } else {
@@ -512,9 +454,8 @@ function refreshScreenData() {
     console.log('my and repeater data available')
     const distance = getDistance(myPos.coord, repeaterPos.coord).toFixed(2);
     const direction = getDirection(myPos.coord, repeaterPos.coord).toFixed(2);
-    //document.getElementById("dist_dir").innerHTML = "távolság:" + distance + " km<br>irány:" + direction + "°";
 
-    document.getElementById("myRepeaterDistance").innerHTML = distance/1000 + " km";
+	document.getElementById("myRepeaterDistance").innerHTML = distance/1000 + " km";
     document.getElementById("myRepeaterBearing").innerHTML = direction+360%360 + "°";
 
   }
@@ -525,11 +466,23 @@ function refreshScreenData() {
     document.getElementById("myTargetDistance").innerHTML = distance/1000 + " km";
     document.getElementById("myTargetBearing").innerHTML = direction+360%360 + "°";
 
+
+	console.log(my_target['polyline'])
+
+	if (my_target['polyline'] != null) {
+		map.removeLayer(my_target['polyline'])
+	}
     var coords = getPointsBetweenCoords(myPos.coord, targetPos.coord);
     //console.log(coords)
-    for (var i=0; i<coords.length; i++) {
-      L.marker(coords[i]).addTo(map);
-    }
+    //for (var i=0; i<coords.length; i++) {
+	my_target['polyline'] = new L.Polyline(coords, {
+		color: 'blue',
+		//weight: 3,
+		//opacity: 0.5,
+		//smoothFactor: 1
+	});
+	my_target['polyline'].addTo(map);
+    //}
     getHeights(coords);
 
   }
